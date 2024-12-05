@@ -6,7 +6,9 @@ const bcrypt = require('bcrypt');
 // Inscription
 router.post('/register', async (req, res) => {
   try {
+    console.log('Requête reçue:', req.body);
     const hashedPassword = await bcrypt.hash(req.body.mot_de_passe, 10);
+    console.log('Mot de passe haché:', hashedPassword);
     const user = new User({
       nom: req.body.nom,
       email: req.body.email,
@@ -14,8 +16,13 @@ router.post('/register', async (req, res) => {
       role: req.body.role,
     });
     await user.save();
+    console.log('Utilisateur enregistré:', user);
     res.json({ success: true, message: 'Utilisateur enregistré avec succès.' });
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ message: 'Cet email est déjà utilisé.' });
+    }
+    console.error('Erreur:', err);
     res.status(500).json({ message: 'Erreur lors de l\'enregistrement de l\'utilisateur.' });
   }
 });
